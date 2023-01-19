@@ -1,0 +1,73 @@
+cl_int GetOpenCLDevice(cl_platform_id PlatformID, cl_device_id *deviceID) {
+	// Function declaration
+	void printOpenCLDeviceInfo(cl_device_id);
+
+	// Variable declarations
+	cl_int clResult;
+	cl_uint deviceCount;
+	cl_device_id *deviceIDs = NULL;
+
+	// Code
+	// Get count of OpenCL supported devices on platform PlatformID
+	clResult = clGetDeviceIDs(PlatformID, CL_DEVICE_TYPE_GPU, 0, NULL, &deviceCount);
+	if(clResult != CL_SUCCESS || deviceCount == 0) {
+		printf("\n No supported devices on platform !!!");
+		UninitOpenCL();
+		return false;
+	}
+	deviceIDs = (cl_device_id *)malloc(sizeof(cl_device_id) * deviceCount);
+
+	// Get actual ids of OpenCL supported devices on platform PlatformID
+	clResult = clGetDeviceIDs(PlatformID, CL_DEVICE_TYPE_GPU, deviceCount, deviceIDs, NULL);
+	if(clResult != CL_SUCCESS) {
+		printf("\n No supported devices on platform !!!");
+		UninitOpenCL();
+		return false;
+	}
+	printf("\n\tFound %d OpenCL supporting device(s).", (int)deviceCount);
+
+	// Print information of all supported OpenCL Devices
+	for(int i = 0; i < deviceCount; i++) {
+		printf("\n\tDevice Number : %d", i);
+		printOpenCLDeviceInfo(deviceIDs[i]);
+	}
+
+	if(deviceCount > 1) {
+		printf("\n Select OpenCL device for selected platform (Device Number) : ");
+		scanf("%d", &selectedDevice);
+	}
+	*deviceID = deviceIDs[selectedDevice];
+
+	return CL_SUCCESS;
+}
+
+void printOpenCLDeviceInfo(cl_device_id device) {
+	// Variable declaration
+	size_t byteCount;
+	cl_char *byteStream = NULL;
+
+	// Code
+	// Device Name
+	clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &byteCount);
+	byteStream = (cl_char *)alloca(sizeof(cl_char) * byteCount);
+	clGetDeviceInfo(device, CL_DEVICE_NAME, byteCount, byteStream, NULL);
+	printf("\n\t\tDevice Name : %s", byteStream);
+
+	// Device Vendor
+	clGetDeviceInfo(device, CL_DEVICE_VENDOR, 0, NULL, &byteCount);
+	byteStream = (cl_char *)alloca(sizeof(cl_char) * byteCount);
+	clGetDeviceInfo(device, CL_DEVICE_VENDOR, byteCount, byteStream, NULL);
+	printf("\n\t\tDevice Vendor : %s", byteStream);
+
+	// Device Version
+	clGetDeviceInfo(device, CL_DEVICE_VERSION, 0, NULL, &byteCount);
+	byteStream = (cl_char *)alloca(sizeof(cl_char) * byteCount);
+	clGetDeviceInfo(device, CL_DEVICE_VERSION, byteCount, byteStream, NULL);
+	printf("\n\t\tDevice Version : %s", byteStream);
+
+	// Driver Version
+	clGetDeviceInfo(device, CL_DRIVER_VERSION, 0, NULL, &byteCount);
+	byteStream = (cl_char *)alloca(sizeof(cl_char) * byteCount);
+	clGetDeviceInfo(device, CL_DRIVER_VERSION, byteCount, byteStream, NULL);
+	printf("\n\t\tDriver Version : %s", byteStream);
+}

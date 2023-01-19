@@ -1,0 +1,66 @@
+cl_int GetOpenCLPlatform(cl_platform_id *platformID) {
+	// Function declarations
+	void printOpenCLPlatformInfo(cl_platform_id);
+	cl_int GetOpenCLDevices(cl_platform_id, cl_device_id *);
+
+	// Variable declaration
+	cl_int clResult;
+	cl_uint PlatformCount;
+	cl_platform_id *platformIDs = NULL;
+
+	// Code
+	// Get count of supported OpenCL platforms
+	clResult = clGetPlatformIDs(1, NULL, &PlatformCount);
+	if(clResult != CL_SUCCESS || PlatformCount == 0) {
+		printf("\n No OpenCL platform found !!!");
+		return clResult;
+	}
+	platformIDs = (cl_platform_id *)alloca(sizeof(cl_platform_id) * PlatformCount);
+
+	// Get actual ids of supported OpenCL platforms
+	clResult = clGetPlatformIDs(PlatformCount, platformIDs, NULL);
+	if(clResult != CL_SUCCESS) {
+		printf("\n Unable to find OpenCL platform !!!");
+		return clResult;
+	}
+	printf("\n Found %d OpenCL supported platform(s).", (int)PlatformCount);
+
+	// Print information of all supported OpenCL platforms
+	for(int i = 0; i < PlatformCount; i++) {
+		printf("\n Platform Number : %d", i);
+		printOpenCLPlatformInfo(platformIDs[i]);
+	}
+
+	if(PlatformCount > 1) {
+		printf("\n Select OpenCL platform (Platform Number) : ");
+		scanf("%d", &selectedPlatform);
+	}
+	*platformID = platformIDs[selectedPlatform];
+
+	return CL_SUCCESS;
+}
+
+void printOpenCLPlatformInfo(cl_platform_id platformID) {
+	// Variable declaration
+	size_t byteCount;
+	cl_char *byteStream = NULL;
+
+	// Code
+	// Platform Name
+	clGetPlatformInfo(platformID, CL_PLATFORM_NAME, 0, NULL, &byteCount);
+	byteStream = (cl_char *) alloca(sizeof(cl_char) * byteCount);
+	clGetPlatformInfo(platformID, CL_PLATFORM_NAME, byteCount, byteStream, NULL);
+	printf("\n\tPlatform Name : %s", byteStream);
+
+	// Platform Vendor
+	clGetPlatformInfo(platformID, CL_PLATFORM_VENDOR, 0, NULL, &byteCount);
+	byteStream = (cl_char *) alloca(sizeof(cl_char) * byteCount);
+	clGetPlatformInfo(platformID, CL_PLATFORM_VENDOR, byteCount, byteStream, NULL);
+	printf("\n\tPlatform Vendor : %s", byteStream);
+
+	// Platform supported openCL version
+	clGetPlatformInfo(platformID, CL_PLATFORM_VERSION, 0, NULL, &byteCount);
+	byteStream = (cl_char *) alloca(sizeof(cl_char) * byteCount);
+	clGetPlatformInfo(platformID, CL_PLATFORM_VERSION, byteCount, byteStream, NULL);
+	printf("\n\tOpenCL Version : %s", byteStream);
+}
